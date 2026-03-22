@@ -1,0 +1,1 @@
+docker compose --profile=openclaw up --build -d --remove-orphans --force-recreate

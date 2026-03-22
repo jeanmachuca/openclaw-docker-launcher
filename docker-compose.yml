@@ -1,5 +1,11 @@
 services:
   openclaw:
+    env_file:
+      - .env
+    profiles:
+      - openclaw
+    networks:
+      - openclaw-network
     build:
       context: .
       dockerfile: Dockerfile
@@ -15,3 +21,6 @@ services:
 
 volumes:
   openclaw_home:
+networks:
+  openclaw-network:
+    driver: bridge

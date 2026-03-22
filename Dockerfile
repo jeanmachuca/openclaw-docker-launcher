@@ -28,5 +28,6 @@ RUN pnpm build
 
 RUN pnpm openclaw onboard --install-daemon
 
+EXPOSE ${OPENCLAW_GATEWAY_PORT}
 # Dev loop (auto-reload on source/config changes); must be CMD so the image can build
 CMD ["pnpm", "gateway:watch"]
