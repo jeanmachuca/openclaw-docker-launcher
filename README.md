@@ -68,13 +68,15 @@ The `openclaw` **profile** is required because the service is declared under `pr
 
 ### 3. First-time OpenClaw setup (new volume)
 
-On a fresh volume, run onboarding once **while the container is running**:
+On a **fresh** `openclaw_home` volume, the container **entrypoint** runs `pnpm openclaw setup` **once** (tracked by `~/.openclaw/.docker-initial-setup-done`) **before** `gateway:watch` starts. That avoids a race where setup and the gateway both write `dist-runtime` and you see errors like symlink `EEXIST` or `failed to stage bundled runtime deps for telegram: npm install failed`.
+
+To run setup again manually (for example after an image upgrade), use:
 
 ```bash
 ./setup.sh
 ```
 
-This runs `pnpm openclaw setup` inside the app tree (`/app/openclaw`). The global `openclaw` binary is not on `PATH` in the image; always use `pnpm openclaw …` or these scripts.
+Do this only while the gateway is not competing for the same files. For a clean re-run: `docker compose --profile openclaw exec openclaw rm -f /home/openclaw/.openclaw/.docker-initial-setup-done`, then `docker compose --profile openclaw restart openclaw`. The global `openclaw` binary is not on `PATH` in the image; use `pnpm openclaw …` or these scripts.
 
 ### 4. Use the gateway
 

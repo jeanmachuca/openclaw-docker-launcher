@@ -30,6 +30,12 @@ RUN pnpm build
 
 RUN pnpm openclaw onboard --install-daemon
 
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+USER root
+RUN chmod +x /docker-entrypoint.sh && chown openclaw:openclaw /docker-entrypoint.sh
+USER openclaw
+
 EXPOSE ${OPENCLAW_GATEWAY_PORT}
+ENTRYPOINT ["/docker-entrypoint.sh"]
 # Dev loop (auto-reload on source/config changes); must be CMD so the image can build
 CMD ["pnpm", "gateway:watch"]
