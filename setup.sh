@@ -1,1 +1,1 @@
-docker compose exec -w /app/openclaw openclaw pnpm openclaw setup
+docker compose --profile openclaw exec -w /app/openclaw openclaw pnpm openclaw setup
