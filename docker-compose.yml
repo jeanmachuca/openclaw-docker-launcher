@@ -1,0 +1,17 @@
+services:
+  openclaw:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: openclaw-docker-agent:latest
+    container_name: openclaw-agent
+    ports:
+      - "${OPENCLAW_GATEWAY_PORT:-18789}:18789"
+    # Persist CLI onboarding, credentials, and local state under the openclaw user
+    volumes:
+      - openclaw_home:/home/openclaw
+    restart: unless-stopped
+    init: true
+
+volumes:
+  openclaw_home:
