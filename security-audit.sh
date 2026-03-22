@@ -1,0 +1,1 @@
+docker compose --profile openclaw exec -w /app/openclaw openclaw openclaw security audit --deep 

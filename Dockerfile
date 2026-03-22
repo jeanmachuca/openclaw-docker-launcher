@@ -3,6 +3,7 @@
 FROM node:22-bookworm-slim
 ARG OPENCLAW_GIT_URL=https://github.com/openclaw/openclaw.git
 ARG OPENCLAW_GIT_REF=main
+ARG OPENCLAW_GATEWAY_PORT=18789
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         git \

@@ -153,6 +153,44 @@ docker compose exec -w /app/openclaw openclaw pnpm openclaw <subcommand> [args]
 
 Named volume **`openclaw_home`** is mounted at **`/home/openclaw`**. Config, credentials, sessions, and canvas data live there and survive container recreation. The OpenClaw git checkout lives under **`/app/openclaw`** in the image and is not meant to be edited for day-to-day use.
 
+## Channels (messaging)
+
+OpenClaw can connect the gateway to many chat surfaces. Upstream onboarding summarizes behavior as follows.
+
+### DM access and sessions
+
+- **Default DM policy is pairing** — Unknown senders get a pairing code; the bot ignores their message until you approve them.
+- **Approve a sender** — `pnpm openclaw pairing approve <channel> <code>` (from the container, use the same `docker compose exec … pnpm openclaw …` pattern as in [Arbitrary CLI commands](#arbitrary-cli-commands)).
+- **Public DMs** — Require explicit `dmPolicy="open"` and `allowFrom` including `"*"` (opt-in; treat as high risk with broad tool access).
+- **Multiple people in DMs** — Isolate context per sender with `pnpm openclaw config set session.dmScope "per-channel-peer"`, or `"per-account-channel-peer"` when you use multiple accounts on the same channel.
+
+See [Pairing](https://docs.openclaw.ai/channels/pairing) in the OpenClaw docs for details.
+
+### Supported surfaces (summary)
+
+| Area | Notes |
+| ---- | ----- |
+| **Telegram** | Straightforward start: create a bot with [@BotFather](https://t.me/BotFather). |
+| **WhatsApp** | Uses your number; a **dedicated phone / eSIM** is recommended vs. your personal line. |
+| **Discord** | Well supported. |
+| **Slack** | Supported (Socket Mode). |
+| **Google Chat** | Google Workspace Chat app over HTTP webhook. |
+| **Microsoft Teams** | Bot Framework; enterprise-oriented. |
+| **Signal** | Via linked `signal-cli` device; more setup than Telegram/Discord. |
+| **IRC** | Classic networks with DM/channel routing and pairing controls. |
+| **LINE** | LINE Messaging API webhook bot. |
+| **Feishu / Lark** | Enterprise messaging with doc/wiki/drive-oriented tooling. |
+| **Nostr** | Decentralized protocol; encrypted DMs (NIP-04). |
+| **Zalo** | Bot API; **Zalo Personal** uses QR login to a personal account. |
+| **Synology Chat** | NAS Chat integration. |
+| **Twitch** | Twitch chat integration. |
+| **Nextcloud Talk** | Self-hosted; webhook bots. |
+| **BlueBubbles** | iMessage path via the BlueBubbles Mac app + REST API. |
+| **iMessage (native)** | Still a work in progress upstream. |
+| **Mattermost, Matrix, Tlon** | Available via **plugins** (install to enable). |
+
+Exact names, config keys, and plugin steps change with releases; use `pnpm openclaw setup` / doctor output inside the image for the live list.
+
 ## Troubleshooting
 
 - **`exec: "openclaw": executable file not found`** — Use `pnpm openclaw` or the scripts above, not bare `openclaw`.
@@ -163,5 +201,6 @@ Named volume **`openclaw_home`** is mounted at **`/home/openclaw`**. Config, cre
 ## References
 
 - [OpenClaw repository](https://github.com/openclaw/openclaw)
+- [OpenClaw Gateway Security](https://docs.openclaw.ai/gateway/security) — trust model, `openclaw security audit`, and hardening guidance
 - [OpenClaw environment variables](https://clawdocs.org/reference/environment-variables/)
 - [OpenClaw configuration](https://clawdocs.org/reference/configuration/)
