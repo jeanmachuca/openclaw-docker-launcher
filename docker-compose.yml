@@ -19,6 +19,7 @@ services:
     # Persist CLI onboarding, credentials, and local state under the openclaw user
     volumes:
       - openclaw_home:/home/openclaw
+      - ./custom-skills:/home/openclaw/.openclaw/skills
     restart: unless-stopped
     init: true
 
