@@ -90,6 +90,49 @@ This runs `pnpm openclaw setup` inside the app tree (`/app/openclaw`). The globa
 
 Runs `pnpm openclaw doctor`. For deeper memory diagnostics: `docker compose exec -w /app/openclaw openclaw pnpm openclaw memory status --deep`.
 
+## Custom Git source (enterprise)
+
+By default the image clones **[openclaw/openclaw](https://github.com/openclaw/openclaw)** at build time. For **enterprise** or **governance** reasons you may need an **internal fork**, a **release branch you control**, or a **read-only mirror** instead of pulling directly from public GitHub.
+
+### Configure URL and ref
+
+Set these in your **`.env`** (same file Compose already loads). They are passed as **`build.args`** into the image; they are **not** runtime variables.
+
+| Variable | Default | Purpose |
+| -------- | ------- | ------- |
+| `OPENCLAW_GIT_URL` | `https://github.com/openclaw/openclaw.git` | Git remote to clone (HTTPS or SSH-style URL, depending on your build environment). |
+| `OPENCLAW_GIT_REF` | `main` | Branch or tag to check out. The Dockerfile uses a **shallow** clone (`--depth 1 --branch`), so the ref must be a **branch or tag name** known on the remote. |
+
+Example **`.env`** fragment:
+
+```bash
+OPENCLAW_GIT_URL=https://github.com/your-org/openclaw-fork.git
+OPENCLAW_GIT_REF=release/2026.03
+```
+
+### Rebuild after changing source
+
+After you change `OPENCLAW_GIT_URL` or `OPENCLAW_GIT_REF`, rebuild the image. A normal `./restart.sh` (which passes **`--build`**) is usually enough because the args participate in the build cache key. If you still see stale source, force a clean clone:
+
+```bash
+docker compose --profile openclaw build --no-cache openclaw
+docker compose --profile openclaw up -d --force-recreate
+```
+
+### Private repositories
+
+Cloning a **private** repo during `docker build` needs credentials available at **build** time, for example:
+
+- [Docker BuildKit secrets](https://docs.docker.com/build/building/secrets/) for a token or netrc, or
+- SSH agent/socket forwarding with a URL like `git@github.com:your-org/openclaw.git`.
+
+This repo’s Dockerfile does not embed those patterns; your platform team should extend the build or use a CI job that builds the image in a trusted environment.
+
+### Operational notes
+
+- **Supply chain** — The build runs **`pnpm install`** and scripts from whatever tree is cloned. Only point `OPENCLAW_GIT_URL` at **vetted** remotes (your fork policy, signed tags, etc.).
+- **Compatibility** — Extreme divergence from upstream may break `pnpm openclaw onboard` or `gateway:watch` in the Dockerfile; validate your fork with a full image build in CI before rollout.
+
 ## Helper scripts
 
 | Script       | Purpose |

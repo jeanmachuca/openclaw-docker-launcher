@@ -1,6 +1,8 @@
 # Debian-based image: node-llama-cpp ships glibc prebuilds; Alpine/musl forces a
 # source build that needs a full C++ toolchain and is slow and fragile in Docker.
 FROM node:22-bookworm-slim
+ARG OPENCLAW_GIT_URL=https://github.com/openclaw/openclaw.git
+ARG OPENCLAW_GIT_REF=main
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         git \
@@ -20,7 +22,7 @@ RUN mkdir -p /etc/openclaw
 RUN chmod +w /app/openclaw
 
 USER openclaw
-RUN git clone https://github.com/openclaw/openclaw.git /app/openclaw
+RUN git clone --depth 1 --branch "${OPENCLAW_GIT_REF}" "${OPENCLAW_GIT_URL}" /app/openclaw
 WORKDIR /app/openclaw
 RUN pnpm install
 RUN pnpm ui:build # auto-installs UI deps on first run

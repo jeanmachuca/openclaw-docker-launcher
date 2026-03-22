@@ -9,6 +9,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        OPENCLAW_GIT_URL: ${OPENCLAW_GIT_URL:-https://github.com/openclaw/openclaw.git}
+        OPENCLAW_GIT_REF: ${OPENCLAW_GIT_REF:-main}
     image: openclaw-docker-agent:latest
     container_name: openclaw-agent
     ports:
