@@ -1,4 +1,4 @@
-# openclaw-docker-agent
+# openclaw-docker-sandbox
 
 A sandboxed [OpenClaw](https://github.com/openclaw/openclaw) agent running in Docker. The image builds OpenClaw from source, runs the gateway in watch mode, and persists all runtime state under `/home/openclaw` in a named volume.
 

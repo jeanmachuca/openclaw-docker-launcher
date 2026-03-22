@@ -12,8 +12,8 @@ services:
       args:
         OPENCLAW_GIT_URL: ${OPENCLAW_GIT_URL:-https://github.com/openclaw/openclaw.git}
         OPENCLAW_GIT_REF: ${OPENCLAW_GIT_REF:-main}
-    image: openclaw-docker-agent:latest
-    container_name: openclaw-agent
+    image: openclaw-docker-sandbox:latest
+    container_name: openclaw-sandbox
     ports:
       - "${OPENCLAW_GATEWAY_PORT:-18789}:18789"
     # Persist CLI onboarding, credentials, and local state under the openclaw user
