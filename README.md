@@ -17,6 +17,7 @@ Concrete benefits:
 - **Filesystem boundary** — By default, the agent sees the container’s filesystem and the **`openclaw_home` volume**, not your entire host disk. You stay safer as long as you **avoid bind-mounting** sensitive host paths unless you intend to expose them.
 - **Credential handling** — API keys and tokens can be supplied via Compose **`env_file`** (or environment blocks) so the **host shell** does not need OpenClaw’s global config; you can keep secrets in `.env` (gitignored) and **rotate or drop the container** without leftover global installs.
 - **Network control** — You choose **which ports** are published and **where** (e.g. `127.0.0.1:18789:18789` on the host) so the gateway is not accidentally exposed beyond your machine.
+- **Tailscale (optional)** — A Compose **`tailscale` profile** runs the official [Tailscale container](https://tailscale.com/kb/1282/docker/) as a **sidecar** (`network_mode: service:openclaw`) so the gateway listens on the **same** network namespace and is reachable on your tailnet **without** relying on the public internet for access control. You can still bind the host port to loopback only for local use.
 - **Reproducibility** — A fixed **base image + Dockerfile** reduces “works on my laptop” drift and makes it easier to **review** what is installed before you trust it with keys or channels.
 
 **Limits (keep expectations honest):** Containers **share the host kernel**; they are **not** the same as a separate VM. A determined attacker or a kernel-level issue is outside what Docker alone can fix. For **stronger** isolation, people combine Docker with **minimal mounts**, **read-only root filesystems**, **rootless Docker**, or run agents in **dedicated machines / VMs**—this repo targets a **sensible default** for **daily development** and **contained** agent use.
@@ -65,6 +66,25 @@ docker compose --profile openclaw up --build -d --remove-orphans --force-recreat
 ```
 
 The `openclaw` **profile** is required because the service is declared under `profiles: [openclaw]`.
+
+#### Tailscale sidecar (optional)
+
+To join the OpenClaw container’s network namespace to your [tailnet](https://tailscale.com/kb/1151/what-is-tailscale/) (so you can reach the gateway from other devices without exposing the host port on the public internet), add a [reusable or ephemeral auth key](https://login.tailscale.com/admin/settings/keys) to `.env`:
+
+```bash
+TS_AUTHKEY=tskey-auth-...
+# Optional:
+TS_HOSTNAME=openclaw-docker
+TS_AUTH_ONCE=true
+```
+
+Start with both profiles:
+
+```bash
+docker compose --profile openclaw --profile tailscale up --build -d --remove-orphans --force-recreate
+```
+
+Alternatively, set `COMPOSE_PROFILES=openclaw,tailscale` in `.env` so `./restart.sh` enables Tailscale automatically. State is stored in the `tailscale_state` volume. The sidecar needs `/dev/net/tun` and `NET_ADMIN` (see the [Tailscale Docker image](https://tailscale.com/kb/1282/docker/)). For tags, OAuth, or other `tailscale up` flags, use a Compose override file with `TS_EXTRA_ARGS` as documented upstream.
 
 ### 3. First-time OpenClaw setup (new volume)
 

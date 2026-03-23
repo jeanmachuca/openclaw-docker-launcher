@@ -23,8 +23,36 @@ services:
     restart: unless-stopped
     init: true
 
+  # Sidecar: shares OpenClaw's network namespace so the gateway is reachable on your tailnet
+  # (same IPs/ports as inside the OpenClaw container). Enable with --profile tailscale.
+  # Requires TS_AUTHKEY in .env (https://login.tailscale.com/admin/settings/keys).
+  tailscale:
+    image: tailscale/tailscale:stable
+    profiles:
+      - tailscale
+    network_mode: "service:openclaw"
+    depends_on:
+      openclaw:
+        condition: service_started
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY:-}
+      TS_STATE_DIR: /var/lib/tailscale
+      # Kernel networking so the node can join the tailnet like a normal host on this net ns
+      TS_USERSPACE: "false"
+      TS_HOSTNAME: ${TS_HOSTNAME:-openclaw-docker}
+      # After first login, reuse persisted state in tailscale_state (see Tailscale image docs)
+      TS_AUTH_ONCE: ${TS_AUTH_ONCE:-true}
+    volumes:
+      - tailscale_state:/var/lib/tailscale
+    restart: unless-stopped
+
 volumes:
   openclaw_home:
+  tailscale_state:
 networks:
   openclaw-network:
     driver: bridge
